@@ -11,6 +11,13 @@ buildscript {
         classpath 'com.chenenyu:img-optimizer:1.2.0' // 图片压缩
 
     }
+    repositories {
+        maven { setUrl("https://maven.aliyun.com/repository/google") }
+        maven { setUrl("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven { setUrl("https://maven.aliyun.com/repository/public") }
+        maven { url = "https://gitee.com/ezy/repo/raw/cosmo/"}
+        google()
+    }
 }
 
 allprojects {
@@ -19,4 +26,11 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+repositories {
+    maven { setUrl("https://maven.aliyun.com/repository/central") }
+    maven { setUrl("https://maven.aliyun.com/repository/google") }
+    maven { setUrl("https://maven.aliyun.com/repository/gradle-plugin") }
+    maven { setUrl("https://maven.aliyun.com/repository/public") }
+    google()
 }

@@ -32,6 +32,7 @@ import com.xuexiang.xupdate._XUpdate;
 import com.xuexiang.xupdate.entity.UpdateEntity;
 import com.xuexiang.xupdate.proxy.impl.DefaultUpdateChecker;
 import com.xuexiang.xupdate.proxy.impl.DefaultUpdateParser;
+import com.xuexiang.xupdate.aria.AriaDownloader;
 import com.xuexiang.xupdate.service.OnFileDownloadListener;
 import com.xuexiang.xupdatedemo.Constants;
 import com.xuexiang.xupdatedemo.R;
@@ -93,6 +94,8 @@ public class AdvancedUseFragment extends XPageSimpleListFragment {
             case 2:
                 XUpdate.newBuild(getActivity())
                         .updateUrl(Constants.CUSTOM_UPDATE_URL)
+                        // 使用 Aria 断点续传下载服务
+                        .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity()))
                         .updateChecker(new DefaultUpdateChecker() {
                             @Override
                             public void onBeforeCheck() {
@@ -159,6 +162,9 @@ public class AdvancedUseFragment extends XPageSimpleListFragment {
 
                     @Override
                     public void onProgress(float progress, long total) {
+                        if (total > 0) {
+                            HProgressDialogUtils.setMax(total);
+                        }
                         HProgressDialogUtils.setProgress(Math.round(progress * 100));
                     }
 

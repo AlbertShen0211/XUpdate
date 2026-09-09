@@ -1,1 +1,1 @@
-include ':app', ':xupdate-lib'
+include ':app', ':xupdate-lib',':xupdate-downloader-aria',':xupdate-easy'

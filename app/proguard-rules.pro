@@ -43,11 +43,8 @@
 -keep public class * extends android.content.ContentProvider
 -keep public class * extends android.app.backup.BackupAgentHelper
 -keep public class * extends android.preference.Preference
--keep public class * extends android.support.v4.**
+-keep public class * extends androidx.fragment.app.Fragment
 -keep public class com.android.vending.licensing.ILicensingService
-
-#如果有引用v4包可以添加下面这行
--keep public class * extends android.support.v4.app.Fragment
 
 ##########JS接口类不混淆，否则执行不了
 -dontwarn com.android.JsInterface.**
@@ -114,9 +111,6 @@
 -keep class **.R$* {*;}
 
 #######===================================混淆保护自己项目的部分代码以及引用的第三方jar包library=============================#######
-#如果引用了v4或者v7包
--dontwarn android.support.**
-
 # AndroidX 防止混淆
 -dontwarn com.google.android.material.**
 -dontnote com.google.android.material.**
@@ -211,6 +205,8 @@
 # xupdate
 -keep class com.xuexiang.xupdate.entity.** { *; }
 -keep class com.xuexiang.xupdatedemo.entity.** { *; }
+-keep class com.xuexiang.xupdate.easy.** { *; }
+-keep class com.xuexiang.xupdate.aria.** { *; }
 
 #XHttp2
 -keep class com.xuexiang.xhttp2.model.** { *; }

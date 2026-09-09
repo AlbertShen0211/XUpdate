@@ -51,6 +51,22 @@ public final class ApkInstallUtils {
     public static final int REQUEST_CODE_INSTALL_APP = 999;
 
     /**
+     * 判断是否已授权「安装未知应用」权限（Android 8.0+）
+     * 使用反射兼容 minSdkVersion=14
+     */
+    private static boolean canRequestPackageInstalls(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return true;
+        }
+        try {
+            java.lang.reflect.Method method = android.provider.Settings.class.getMethod("canRequestPackageInstalls", Context.class);
+            return (Boolean) method.invoke(null, context);
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    /**
      * 是否支持静默安装【默认是true】
      */
     private static boolean sSupportSilentInstall = true;
@@ -239,6 +255,13 @@ public final class ApkInstallUtils {
         try {
             Intent intent = getInstallAppIntent(appFile);
             if (context.getPackageManager().queryIntentActivities(intent, 0).size() > 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                        && !canRequestPackageInstalls(context)) {
+                    // Android 8.0+ 需要「安装未知应用」权限
+                    _XUpdate.onUpdateError(INSTALL_FAILED,
+                            "请在设置中开启「安装未知应用」权限后重试");
+                    return false;
+                }
                 if (context instanceof Activity) {
                     ((Activity) context).startActivityForResult(intent, REQUEST_CODE_INSTALL_APP);
                 } else {

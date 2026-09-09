@@ -26,6 +26,8 @@ import android.text.TextUtils;
  */
 public class HProgressDialogUtils {
     private static ProgressDialog sHorizontalProgressDialog;
+    // 记录总大小，用于计算百分比进度
+    private static long sTotalSize = 0;
 
     private HProgressDialogUtils() {
         throw new UnsupportedOperationException("cannot be instantiated");
@@ -42,28 +44,29 @@ public class HProgressDialogUtils {
             if (isShowSize) {
                 sHorizontalProgressDialog.setProgressNumberFormat("%2dMB/%1dMB");
             }
-
+            // 默认按百分比显示（0-100），不依赖已知总大小
+            sHorizontalProgressDialog.setMax(100);
         }
         if (!TextUtils.isEmpty(msg)) {
             sHorizontalProgressDialog.setMessage(msg);
         }
         sHorizontalProgressDialog.show();
-
     }
 
+    /**
+     * 设置进度条最大值（总字节数）
+     * 调用此方法后，进度将按实际字节比例显示
+     */
     public static void setMax(long total) {
-        if (sHorizontalProgressDialog != null) {
-            sHorizontalProgressDialog.setMax(((int) total) / (1024 * 1024));
+        if (sHorizontalProgressDialog != null && total > 0) {
+            sTotalSize = total;
+            sHorizontalProgressDialog.setMax(100);
         }
     }
 
-    public static void cancel() {
-        if (sHorizontalProgressDialog != null) {
-            sHorizontalProgressDialog.dismiss();
-            sHorizontalProgressDialog = null;
-        }
-    }
-
+    /**
+     * 设置进度（百分比 0-100）
+     */
     public static void setProgress(int current) {
         if (sHorizontalProgressDialog == null) {
             return;
@@ -72,31 +75,38 @@ public class HProgressDialogUtils {
         if (sHorizontalProgressDialog.getProgress() >= sHorizontalProgressDialog.getMax()) {
             sHorizontalProgressDialog.dismiss();
             sHorizontalProgressDialog = null;
+            sTotalSize = 0;
         }
     }
 
-    public static void setProgress(long current) {
-        if (sHorizontalProgressDialog == null) {
-            return;
-        }
-        sHorizontalProgressDialog.setProgress(((int) current) / (1024 * 1024));
-        if (sHorizontalProgressDialog.getProgress() >= sHorizontalProgressDialog.getMax()) {
-            sHorizontalProgressDialog.dismiss();
-            sHorizontalProgressDialog = null;
-        }
-    }
-
+    /**
+     * 根据字节数更新进度条
+     *
+     * @param total   总字节数
+     * @param current 当前已下载字节数
+     */
     public static void onLoading(long total, long current) {
         if (sHorizontalProgressDialog == null) {
             return;
         }
-        if (current == 0) {
-            sHorizontalProgressDialog.setMax(((int) total) / (1024 * 1024));
+        if (total > 0) {
+            sTotalSize = total;
+            sHorizontalProgressDialog.setMax(100);
         }
-        sHorizontalProgressDialog.setProgress(((int) current) / (1024 * 1024));
-        if (sHorizontalProgressDialog.getProgress() >= sHorizontalProgressDialog.getMax()) {
+        int percent = sTotalSize > 0 ? (int) (current * 100 / sTotalSize) : Math.round(current);
+        sHorizontalProgressDialog.setProgress(percent);
+        if (percent >= 100) {
+            sHorizontalProgressDialog.dismiss();
+            sHorizontalProgressDialog = null;
+            sTotalSize = 0;
+        }
+    }
+
+    public static void cancel() {
+        if (sHorizontalProgressDialog != null) {
             sHorizontalProgressDialog.dismiss();
             sHorizontalProgressDialog = null;
         }
+        sTotalSize = 0;
     }
 }

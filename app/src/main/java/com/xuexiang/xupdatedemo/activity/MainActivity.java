@@ -18,18 +18,48 @@ package com.xuexiang.xupdatedemo.activity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.xuexiang.xpage.base.XPageActivity;
 import com.xuexiang.xupdatedemo.fragment.MainFragment;
 import com.xuexiang.xupdatedemo.utils.NotifyUtils;
 
 public class MainActivity extends XPageActivity {
-
+    // 1. 注册从系统设置页面返回的回调
+    private final ActivityResultLauncher<Intent> installPermissionLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        // 从设置页返回后再次检查权限
+                        checkInstallPermissionAndInstall();
+                    }
+            );
+    private void checkInstallPermissionAndInstall() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Android 8.0+ 检查是否允许安装未知应用
+            if (getPackageManager().canRequestPackageInstalls()) {
+                // 已获得权限，执行 APK 安装
+               // startInstallApk();
+            } else {
+                // 未获得权限，跳转设置页
+                openInstallPermissionSettings();
+            }
+        } else {
+            // Android 8.0 以下直接执行安装
+            //startInstallApk();
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        checkInstallPermissionAndInstall();
         openPage(MainFragment.class);
 
         if (!NotifyUtils.isNotifyPermissionOpen(this)) {
@@ -44,6 +74,16 @@ public class MainActivity extends XPageActivity {
                     })
                     .setNegativeButton("否", null)
                     .show();
+        }
+    }
+
+    private void openInstallPermissionSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent intent = new Intent(
+                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + getPackageName())
+            );
+            installPermissionLauncher.launch(intent);
         }
     }
 }

@@ -54,6 +54,8 @@ public class CustomUpdatePrompter implements IUpdatePrompter {
                 .setPositiveButton("升级", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        // 关闭提示对话框，避免遮挡下载进度
+                        dialog.dismiss();
                         updateProxy.startDownload(updateEntity, new OnFileDownloadListener() {
                             @Override
                             public void onStart() {
@@ -62,11 +64,19 @@ public class CustomUpdatePrompter implements IUpdatePrompter {
 
                             @Override
                             public void onProgress(float progress, long total) {
-                                HProgressDialogUtils.setProgress(Math.round(progress * 100));
+                                if (total <= 0) {
+                                    // Aria 在获取到 Content-Length 之前 fileSize 返回 0
+                                    // 直接用百分比更新，避免进度条始终停在 0%
+                                    HProgressDialogUtils.setProgress(Math.round(progress * 100));
+                                } else {
+                                    HProgressDialogUtils.onLoading(total, (long) (progress * total));
+                                }
                             }
 
                             @Override
                             public boolean onCompleted(File file) {
+                                // 返回 true，让 DownloadService 继续执行自动安装逻辑
+                                // 返回 false 会导致 handleOnSuccess 提前 close() 并 return，跳过安装
                                 HProgressDialogUtils.cancel();
                                 return true;
                             }
@@ -74,6 +84,7 @@ public class CustomUpdatePrompter implements IUpdatePrompter {
                             @Override
                             public void onError(Throwable throwable) {
                                 HProgressDialogUtils.cancel();
+                                com.xuexiang.xutil.tip.ToastUtils.toast("下载失败：" + (throwable != null ? throwable.getMessage() : "未知错误"));
                             }
                         });
                     }

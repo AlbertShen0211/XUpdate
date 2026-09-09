@@ -1,29 +1,12 @@
-/*
- * Copyright (C) 2018 xuexiangjys(xuexiangjys@163.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.xuexiang.xupdatedemo.fragment;
 
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.EditText;
 
 import com.xuexiang.xpage.annotation.Page;
 import com.xuexiang.xpage.base.XPageFragment;
 import com.xuexiang.xupdate.XUpdate;
 import com.xuexiang.xupdatedemo.R;
+import com.xuexiang.xupdatedemo.databinding.FragmentXupdateServiceBinding;
 import com.xuexiang.xupdatedemo.custom.XUpdateServiceParser;
 import com.xuexiang.xupdatedemo.utils.SettingSPUtils;
 import com.xuexiang.xutil.app.PathUtils;
@@ -31,8 +14,6 @@ import com.xuexiang.xutil.net.NetworkUtils;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.OnClick;
 import okhttp3.HttpUrl;
 
 /**
@@ -42,8 +23,7 @@ import okhttp3.HttpUrl;
 @Page(name = "版本更新服务")
 public class XUpdateServiceFragment extends XPageFragment {
 
-    @BindView(R.id.et_service_url)
-    EditText mEtServiceUrl;
+    private FragmentXupdateServiceBinding binding;
 
     @Override
     protected int getLayoutId() {
@@ -52,54 +32,45 @@ public class XUpdateServiceFragment extends XPageFragment {
 
     @Override
     protected void initViews() {
-        mEtServiceUrl.setText(SettingSPUtils.get().getServiceURL());
+        binding = FragmentXupdateServiceBinding.bind(mRootView);
+        binding.etServiceUrl.setText(SettingSPUtils.get().getServiceURL());
     }
 
     @Override
     protected void initListeners() {
-
-    }
-
-    @OnClick({R.id.btn_save, R.id.btn_update, R.id.btn_auto_update, R.id.btn_force_update})
-    public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.btn_save:
-                String url = mEtServiceUrl.getText().toString().trim();
-                if (NetworkUtils.isUrlValid(url) && parseBaseUrl(url)) {
-                    SettingSPUtils.get().setServiceURL(url);
-                }
-                break;
-            case R.id.btn_update:
+        binding.btnSave.setOnClickListener(v -> {
+            String url = binding.etServiceUrl.getText().toString().trim();
+            if (NetworkUtils.isUrlValid(url) && parseBaseUrl(url)) {
+                SettingSPUtils.get().setServiceURL(url);
+            }
+        });
+        binding.btnUpdate.setOnClickListener(v ->
                 XUpdate.newBuild(getContext())
                         .apkCacheDir(PathUtils.getExtDownloadsPath())
                         .updateHttpService(XUpdateServiceParser.getUpdateHttpService())
                         .isGet(false)
                         .updateUrl(XUpdateServiceParser.getVersionCheckUrl())
                         .updateParser(new XUpdateServiceParser())
-                        .update();
-                break;
-            case R.id.btn_auto_update:
+                        .update()
+        );
+        binding.btnAutoUpdate.setOnClickListener(v ->
                 XUpdate.newBuild(getContext())
                         .isGet(false)
                         .updateUrl(XUpdateServiceParser.getVersionCheckUrl())
                         .updateParser(new XUpdateServiceParser())
                         //如果需要完全无人干预，自动更新，需要root权限【静默安装需要】
                         .isAutoMode(true)
-                        .update();
-                break;
-            case R.id.btn_force_update:
+                        .update()
+        );
+        binding.btnForceUpdate.setOnClickListener(v ->
                 XUpdate.newBuild(getContext())
                         .isGet(false)
                         .param("appKey", "test3")
                         .updateUrl(XUpdateServiceParser.getVersionCheckUrl())
                         .updateParser(new XUpdateServiceParser())
-                        .update();
-                break;
-            default:
-                break;
-        }
+                        .update()
+        );
     }
-
 
     /**
      * 解析baseUrl
@@ -118,4 +89,9 @@ public class XUpdateServiceFragment extends XPageFragment {
         return false;
     }
 
+    @Override
+    public void onDestroyView() {
+        binding = null;
+        super.onDestroyView();
+    }
 }

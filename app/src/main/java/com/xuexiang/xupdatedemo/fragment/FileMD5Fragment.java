@@ -5,7 +5,6 @@ import static android.app.Activity.RESULT_OK;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.view.View;
-import android.widget.TextView;
 
 import com.xuexiang.xaop.annotation.Permission;
 import com.xuexiang.xaop.annotation.SingleClick;
@@ -14,15 +13,13 @@ import com.xuexiang.xpage.annotation.Page;
 import com.xuexiang.xpage.base.XPageFragment;
 import com.xuexiang.xupdate._XUpdate;
 import com.xuexiang.xupdatedemo.R;
+import com.xuexiang.xupdatedemo.databinding.FragmentFileMd5Binding;
 import com.xuexiang.xutil.app.IntentUtils;
 import com.xuexiang.xutil.app.PathUtils;
 import com.xuexiang.xutil.app.SocialShareUtils;
 import com.xuexiang.xutil.common.StringUtils;
 import com.xuexiang.xutil.file.FileUtils;
 import com.xuexiang.xutil.tip.ToastUtils;
-
-import butterknife.BindView;
-import butterknife.OnClick;
 
 /**
  * @author xuexiang
@@ -31,14 +28,9 @@ import butterknife.OnClick;
 @Page(name = "获取文件的MD5值")
 public class FileMD5Fragment extends XPageFragment {
 
-    private final static int REQUEST_CODE_SELECT_APK_FILE = 1000;
+    private static final int REQUEST_CODE_SELECT_APK_FILE = 1000;
 
-    @BindView(R.id.tv_path)
-    TextView tvPath;
-    @BindView(R.id.tv_md5)
-    TextView tvMd5;
-    @BindView(R.id.tv_size)
-    TextView tvSize;
+    private FragmentFileMd5Binding binding;
 
     @Override
     protected int getLayoutId() {
@@ -47,53 +39,32 @@ public class FileMD5Fragment extends XPageFragment {
 
     @Override
     protected void initViews() {
-
+        binding = FragmentFileMd5Binding.bind(mRootView);
     }
 
     @Override
     protected void initListeners() {
-
+        binding.btnSelectFile.setOnClickListener(v -> selectAPKFile());
+        binding.btnCalculateMd5.setOnClickListener(v -> calculateMd5());
+        binding.btnShareFile.setOnClickListener(v -> shareFile());
+        binding.btnShareMd5.setOnClickListener(v -> shareMd5());
     }
-
 
     @SingleClick
-    @OnClick({R.id.btn_select_file, R.id.btn_calculate_md5, R.id.btn_share_file, R.id.btn_share_md5})
-    public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.btn_select_file:
-                selectAPKFile();
-                break;
-            case R.id.btn_calculate_md5:
-                calculateMd5();
-                break;
-            case R.id.btn_share_file:
-                shareFile();
-                break;
-            case R.id.btn_share_md5:
-                shareMd5();
-                break;
-            default:
-                break;
-        }
-    }
-
-
     private void calculateMd5() {
-        String filePath = tvPath.getText().toString();
+        String filePath = binding.tvPath.getText().toString();
         if (StringUtils.isEmpty(filePath)) {
             ToastUtils.toast("请先选择文件！");
             return;
         }
 
-        tvMd5.setText(_XUpdate.encryptFile(FileUtils.getFileByPath(filePath)));
-
-        tvSize.setText(String.valueOf(FileUtils.getFileLength(filePath) / 1024));
-
+        binding.tvMd5.setText(_XUpdate.encryptFile(FileUtils.getFileByPath(filePath)));
+        binding.tvSize.setText(String.valueOf(FileUtils.getFileLength(filePath) / 1024));
     }
 
-
+    @SingleClick
     private void shareFile() {
-        String filePath = tvPath.getText().toString();
+        String filePath = binding.tvPath.getText().toString();
         if (StringUtils.isEmpty(filePath)) {
             ToastUtils.toast("请先选择文件！");
             return;
@@ -102,8 +73,9 @@ public class FileMD5Fragment extends XPageFragment {
         SocialShareUtils.shareFile(getActivity(), PathUtils.getUriForFile(FileUtils.getFileByPath(filePath)));
     }
 
+    @SingleClick
     private void shareMd5() {
-        String md5 = tvMd5.getText().toString();
+        String md5 = binding.tvMd5.getText().toString();
         if (StringUtils.isEmpty(md5)) {
             ToastUtils.toast("请先计算MD5值！");
             return;
@@ -111,7 +83,6 @@ public class FileMD5Fragment extends XPageFragment {
 
         shareText(md5);
     }
-
 
     /**
      * 分享文字
@@ -127,7 +98,6 @@ public class FileMD5Fragment extends XPageFragment {
         startActivity(Intent.createChooser(shareIntent, "分享到"));
     }
 
-
     @Permission(PermissionConsts.STORAGE)
     private void selectAPKFile() {
         startActivityForResult(IntentUtils.getDocumentPickerIntent(IntentUtils.DocumentType.ANY), REQUEST_CODE_SELECT_APK_FILE);
@@ -139,10 +109,14 @@ public class FileMD5Fragment extends XPageFragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CODE_SELECT_APK_FILE) {
-                tvPath.setText(PathUtils.getFilePathByUri(getContext(), data.getData()));
+                binding.tvPath.setText(PathUtils.getFilePathByUri(getContext(), data.getData()));
             }
         }
     }
 
-
+    @Override
+    public void onDestroyView() {
+        binding = null;
+        super.onDestroyView();
+    }
 }

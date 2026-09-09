@@ -3,18 +3,16 @@ apply plugin: 'com.xuexiang.xaop' //引用xaop插件
 apply plugin: 'img-optimizer'
 
 android {
+    namespace = 'com.xuexiang.xupdatedemo'
     compileSdkVersion build_versions.target_sdk
-    buildToolsVersion build_versions.build_tools
 
     defaultConfig {
         applicationId "com.xuexiang.xupdatedemo"
-        minSdkVersion 14
+        minSdkVersion 28
         targetSdkVersion build_versions.target_sdk
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        vectorDrawables.useSupportLibrary = true
     }
 
     if (project.hasProperty("RELEASE_STORE_FILE")) {
@@ -31,7 +29,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (project.hasProperty("RELEASE_STORE_FILE")) {
                 signingConfig signingConfigs.release
             }
@@ -40,26 +38,32 @@ android {
 
     if (project.hasProperty("RELEASE_STORE_FILE")) {
         applicationVariants.all { variant ->
-            variant.outputs.all {
-                if (variant.buildType.name.equals('release')) {
-                    outputFileName = "xupdate_demo_${defaultConfig.versionName}.apk"
+            variant.outputs.each { output ->
+                if (variant.buildType.name == 'release') {
+                    output.outputFileName = "xupdate_demo_${defaultConfig.versionName}.apk"
                 }
             }
         }
     }
 
     lintOptions {
-        checkReleaseBuilds false
-        abortOnError false
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 
     configurations.all {
         resolutionStrategy.force deps.okhttp3
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
     }
 }
 
@@ -70,6 +74,7 @@ dependencies {
     androidTestImplementation deps.runner
     androidTestImplementation deps.espresso.core
     implementation project(':xupdate-lib')
+    implementation project(':xupdate-downloader-aria')
 
 //    implementation 'com.github.xuexiangjys:XUpdate:2.1.5'
 
@@ -80,9 +85,6 @@ dependencies {
     //XPage
     implementation 'com.github.xuexiangjys.XPage:xpage-lib:3.2.0'
     annotationProcessor 'com.github.xuexiangjys.XPage:xpage-compiler:3.2.0'
-    //butterknife的sdk
-    implementation deps.butterknife.runtime
-    annotationProcessor deps.butterknife.compiler
     //如果开启了内存泄漏监测leak,就需要加上这个依赖
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 
@@ -93,8 +95,8 @@ dependencies {
     implementation 'com.github.xuexiangjys:XHttp2:2.0.4'
     implementation deps.gson
     implementation deps.okhttp3
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 }
 
-apply from: "$rootDir/gradle/exported.gradle"
+//apply from: "$rootDir/gradle/exported.gradle"
