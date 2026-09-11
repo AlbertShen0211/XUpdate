@@ -19,6 +19,8 @@ package com.xuexiang.xupdate.aria;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.xuexiang.xupdate.easy.EasyUpdate;
 import com.xuexiang.xupdate.easy.config.UpdateConfig;
 import com.xuexiang.xupdate.easy.service.OkHttpUpdateHttpServiceImpl;
@@ -37,22 +39,44 @@ public final class AriaDownloader {
     }
 
     /**
-     * 开启Aria功能
+     * 开启Aria功能（默认4线程分片下载）
      *
      * @param context 上下文
      */
     public static void enable(Context context) {
-        EasyUpdate.enableDownloadProxy(context, new AriaDownloadServiceProxyImpl(context));
+        enable(context, 4);
     }
 
     /**
-     * 获取版本更新网络请求服务API
+     * 开启Aria功能并指定下载线程数
+     *
+     * @param context   上下文
+     * @param threadNum 下载线程数，建议 2~8。
+     *                  注意：Aria 规定当文件总大小小于 1MB 时，线程数设置不会生效，将回退到单线程模式。
+     */
+    public static void enable(Context context, int threadNum) {
+        EasyUpdate.enableDownloadProxy(context, new AriaDownloadServiceProxyImpl(context, threadNum));
+    }
+
+    /**
+     * 获取版本更新网络请求服务API（默认4线程）
      *
      * @param context 上下文
      */
     public static IUpdateHttpService getUpdateHttpService(Context context) {
+        return getUpdateHttpService(context, 4);
+    }
+
+    /**
+     * 获取版本更新网络请求服务API（指定线程数）
+     *
+     * @param context   上下文
+     * @param threadNum 下载线程数，建议 2~8
+     */
+    public static IUpdateHttpService getUpdateHttpService(Context context, int threadNum) {
         UpdateConfig config = EasyUpdate.getUpdateConfig(context);
-        return new OkHttpUpdateHttpServiceImpl(config.getTimeout(), config.isPostJson(), new AriaDownloadServiceProxyImpl(context));
+        return new OkHttpUpdateHttpServiceImpl(config.getTimeout(), config.isPostJson(),
+                new AriaDownloadServiceProxyImpl(context, threadNum));
     }
 
 }

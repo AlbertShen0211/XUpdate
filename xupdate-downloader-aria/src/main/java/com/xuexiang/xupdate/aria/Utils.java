@@ -63,6 +63,28 @@ final class Utils {
     }
 
     /**
+     * 从完整文件路径中提取父目录路径
+     *
+     * @param filePath 完整文件路径（含文件名）
+     * @return 父目录路径，末尾带分隔符
+     */
+    public static String getParentDirPath(String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            return "";
+        }
+        File file = new File(filePath);
+        File parent = file.getParentFile();
+        if (parent == null) {
+            return "";
+        }
+        String parentPath = parent.getAbsolutePath();
+        if (!parentPath.endsWith(File.separator)) {
+            parentPath = parentPath + File.separator;
+        }
+        return parentPath;
+    }
+
+    /**
      * 判断目录是否存在，不存在则判断是否创建成功
      *
      * @param dirPath 目录路径

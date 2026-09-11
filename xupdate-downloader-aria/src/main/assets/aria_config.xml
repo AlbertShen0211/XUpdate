@@ -38,7 +38,7 @@
         3、只对新的多线程下载任务有效
         4、只对多线程的任务有效
     -->
-    <useBlock value="true"/>
+    <useBlock value="false"/>
 
     <!--设置下载线程数，下载线程数不能小于1
       注意：
@@ -77,7 +77,7 @@
     <queueMod value="wait"/>
 
     <!--进度更新更新间隔，默认1000毫秒-->
-    <updateInterval value="200"/>
+    <updateInterval value="1000"/>
 
   </download>
 
@@ -111,7 +111,7 @@
     <queueMod value="wait"/>
 
     <!--进度更新更新间隔，默认1000毫秒-->
-    <updateInterval value="200"/>
+    <updateInterval value="1000"/>
 
   </upload>
 
@@ -131,7 +131,7 @@
     <queueMod value="wait"/>
 
     <!--进度更新更新间隔，默认1000毫秒-->
-    <updateInterval value="200"/>
+    <updateInterval value="1000"/>
     <!--子任务失败时组任务回调stop，默认true false将回调fail-->
     <subFailAsStop value="true"/>
 

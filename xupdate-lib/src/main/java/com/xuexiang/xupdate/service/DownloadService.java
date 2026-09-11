@@ -374,10 +374,10 @@ public class DownloadService extends Service {
          */
         private boolean canRefreshProgress(int newRate) {
             if (mBuilder != null) {
-                // 系统通知栏对单个应用通知队列通长度进行了限制。
-                // notify方法会将Notification加入系统的通知队列，当前应用发出的Notification数量超过50时，不再继续向系统的通知队列添加Notification，即造成了notificationManagerCompat.notify(TAG, NOTIFY_ID, notify)无效的现象。
+                // 系统通知栏降低刷新频率，避免频繁通知
                 return Math.abs(newRate - mOldRate) >= 4;
             } else {
+                // 非通知栏（对话框等）提高刷新频率，确保流畅
                 return Math.abs(newRate - mOldRate) >= 1;
             }
         }

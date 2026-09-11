@@ -122,6 +122,8 @@ public class AdvancedUseFragment extends XPageSimpleListFragment {
             case 3:
                 XUpdate.newBuild(getActivity())
                         .supportBackgroundUpdate(true)
+                        // 使用 Aria 断点续传下载服务
+                        .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity()))
 //                        // 忽略下载异常，不关闭更新提示窗
 //                        .promptIgnoreDownloadError(true)
                         .build()
