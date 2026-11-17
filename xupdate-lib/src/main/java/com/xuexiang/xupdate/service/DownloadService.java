@@ -348,38 +348,32 @@ public class DownloadService extends Service {
             }
 
             int rate = Math.round(progress * 100);
-            //做一下判断，防止自回调过于频繁，造成更新通知栏进度过于频繁，而出现卡顿的问题。
-            if (canRefreshProgress(rate)) {
-                dispatchOnProgress(progress, total);
+            // UI 监听器（对话框/自定义进度条）始终派发，保证进度实时、平滑递增（1% 粒度）。
+            // Aria 等代理按 20ms 高频回调，此处不再节流，避免进度条“卡顿跳变”。
+            dispatchOnProgress(progress, total);
 
-                if (mBuilder != null) {
-                    mBuilder.setContentTitle(getString(R.string.xupdate_lab_downloading) + UpdateUtils.getAppName(DownloadService.this))
-                            .setContentText(rate + "%")
-                            .setProgress(100, rate, false)
-                            .setWhen(System.currentTimeMillis());
-                    Notification notification = mBuilder.build();
-                    notification.flags = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONLY_ALERT_ONCE;
-                    mNotificationManager.notify(DOWNLOAD_NOTIFY_ID, notification);
-                }
-                //重新赋值
+            // 通知栏：系统通知刷新过频会造成卡顿，需按百分比变化量节流。
+            if (mBuilder != null && canRefreshNotification(rate)) {
+                mBuilder.setContentTitle(getString(R.string.xupdate_lab_downloading) + UpdateUtils.getAppName(DownloadService.this))
+                        .setContentText(rate + "%")
+                        .setProgress(100, rate, false)
+                        .setWhen(System.currentTimeMillis());
+                Notification notification = mBuilder.build();
+                notification.flags = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONLY_ALERT_ONCE;
+                mNotificationManager.notify(DOWNLOAD_NOTIFY_ID, notification);
+                // 重新赋值
                 mOldRate = rate;
             }
         }
 
         /**
-         * 是否可以刷新进度
+         * 是否刷新通知栏进度（仅对系统通知栏节流，避免频繁 notify 卡顿）。
          *
-         * @param newRate 最新进度
-         * @return 是否可以刷新进度
+         * @param newRate 最新进度百分比
+         * @return 是否可以刷新通知栏
          */
-        private boolean canRefreshProgress(int newRate) {
-            if (mBuilder != null) {
-                // 系统通知栏降低刷新频率，避免频繁通知
-                return Math.abs(newRate - mOldRate) >= 4;
-            } else {
-                // 非通知栏（对话框等）提高刷新频率，确保流畅
-                return Math.abs(newRate - mOldRate) >= 1;
-            }
+        private boolean canRefreshNotification(int newRate) {
+            return Math.abs(newRate - mOldRate) >= 4;
         }
 
 

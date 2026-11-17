@@ -1,5 +1,7 @@
 package com.xuexiang.xupdate.utils;
 
+import com.xuexiang.xupdate.logs.UpdateLog;
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -179,7 +181,14 @@ public final class FileUtils {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             String authority = XUpdate.getContext().getPackageName() + ".updateFileProvider";
-            return FileProvider.getUriForFile(XUpdate.getContext(), authority, file);
+            try {
+                return FileProvider.getUriForFile(XUpdate.getContext(), authority, file);
+            } catch (IllegalArgumentException e) {
+                // 文件路径未匹配到已声明的 FileProvider <paths> 时，getUriForFile 会抛异常。
+                // 这里回退到 file://，交由上层 installNormal 的 try/catch 统一处理，避免整个进程崩溃。
+                UpdateLog.w("FileProvider cannot map path: " + file.getAbsolutePath() + ", fallback to file:// URI");
+                return Uri.fromFile(file);
+            }
         } else {
             return Uri.fromFile(file);
         }

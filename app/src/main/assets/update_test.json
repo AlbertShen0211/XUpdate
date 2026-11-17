@@ -2,11 +2,11 @@
   "Code": 0,
   "Msg": "",
   "UpdateStatus": 1,
-  "VersionCode": 3,
-  "VersionName": "1.0.2",
-  "UploadTime": "2018-07-10 17:28:41",
-  "ModifyContent": "\r\n1、优化api接口。\r\n2、添加使用demo演示。\r\n3、新增自定义更新服务API接口。\r\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。\n1、优化api接口。\n2、添加使用demo演示。\n3、新增自定义更新服务API接口。\n4、优化更新提示界面。",
-  "DownloadUrl": "https://xuexiangjys.oss-cn-shanghai.aliyuncs.com/apk/xupdate_demo_1.0.2.apk",
-  "ApkSize": 1689241,
-  "ApkMd5": "E4B79A36EFB9F17DF7E3BB161F9BCFD8"
+  "VersionCode": 2,
+  "VersionName": "1.0.1",
+  "UploadTime": "2026-11-17 09:43:00",
+  "ModifyContent": "\r\n1、优化api接口。\r\n2、添加使用demo演示。\r\n3、新增自定义更新服务API接口。\r\n4、优化更新提示界面。",
+  "DownloadUrl": "https://oss.pgyer.com/69debe3e7e36c369236ac46368a17434.apk?auth_key=1794883311-8541422632fdf6a9576dcb8235f13f87-0-ef7e453d8081369be5ca09b9228aa08d&response-content-disposition=attachment%3Bfilename%3DXUpdate_1.0.1.apk",
+  "ApkSize": 13560148,
+  "ApkMd5": ""
 }

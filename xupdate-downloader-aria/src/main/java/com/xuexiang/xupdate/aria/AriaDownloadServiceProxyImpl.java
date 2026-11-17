@@ -21,6 +21,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -93,6 +94,9 @@ public class AriaDownloadServiceProxyImpl implements IDownloadServiceProxy, Down
         this(context, 1);
     }
 
+    /** 日志 TAG，用于观察进度回调节奏（验证 1% 平滑递增） */
+    private static final String TAG = "AriaUpdateProxy";
+
     /**
      * 构造方法
      *
@@ -106,6 +110,14 @@ public class AriaDownloadServiceProxyImpl implements IDownloadServiceProxy, Down
         // 通过全局配置设置下载线程数，Aria 会在创建任务时读取该值
         AriaConfig config = AriaConfig.getInstance();
         config.getDConfig().setThreadNum(mThreadNum);
+        // Aria 的 NormalLoader 在“创建任务”那一刻会把 updateInterval 从 getDConfig() 一次性读取
+        // （mUpdateInterval = getDConfig().getUpdateInterval()），之后任务内定时器的刷新频率就固定了；
+        // 默认 1000ms，此时 getCurrentProgress()/getPercent() 每秒才刷新一次，进度条会呈 ~1% 跳变。
+        // 因此必须在这里（download()/create() 之前）就把它设为 100ms，让 loader 读取到 100ms，
+        // 任务内定时器每 100ms 刷新一次字节进度，配合 20ms 的 UI 轮询即可平滑按 1% 爬升。
+        // 注意：若改到 download() 之后再设（如 firstDownload/continueDownload 中），loader 早已按 1000ms
+        // 建好定时器，修改不会生效，进度依旧跳变 —— 这正是 case 2 之前进度不连续的根因。
+        config.getDConfig().setUpdateInterval(100);
     }
 
     @Override
@@ -190,9 +202,12 @@ public class AriaDownloadServiceProxyImpl implements IDownloadServiceProxy, Down
                 long downloaded = target.getCurrentProgress();
                 long totalSize = target.getFileSize();
                 float progress = totalSize > 0 ? downloaded / (float) totalSize : 0f;
+                int percent = Math.round(progress * 100);
+                Log.d(TAG, String.format("[onProgress] %d%%  (%d / %d bytes)", percent, downloaded, totalSize));
                 mCallback.onProgress(progress, totalSize);
-                // ARIA updateInterval 配置为 1000ms，轮询间隔需小于该值才能捕捉到 currentProgress 变化；
-                // 设为 20ms 可确保在 ARIA 定时器触发的间隙也能读到最新进度，实现实时百分比更新。
+                // updateInterval 已在构造时（create 之前）设为 100ms，任务内定时器每 100ms 刷新一次
+                // currentProgress；这里 20ms 轮询只是“尽快读走”定时器刚写好的最新字节数，
+                // 不会读到跳变 —— 二者配合才能做到进度按 1% 平滑爬升。
                 mProgressHandler.postDelayed(this, 20);
             }
         };
@@ -282,7 +297,9 @@ public class AriaDownloadServiceProxyImpl implements IDownloadServiceProxy, Down
     public void onTaskRunning(DownloadTask task) {
         if (isCurrentTask(task)) {
             if (mCallback != null) {
-                mCallback.onProgress(task.getPercent() / 100F, task.getFileSize());
+                float progress = task.getPercent() / 100F;
+                Log.d(TAG, String.format("[onTaskRunning] %d%%  (%d / %d bytes)", task.getPercent(), task.getCurrentProgress(), task.getFileSize()));
+                mCallback.onProgress(progress, task.getFileSize());
             }
             // onTaskRunning 触发时也启动轮询作为兜底（有些场景下 onPre 不会回调）
             startProgressPolling();

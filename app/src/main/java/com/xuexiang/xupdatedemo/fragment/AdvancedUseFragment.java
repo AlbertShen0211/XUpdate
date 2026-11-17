@@ -95,7 +95,8 @@ public class AdvancedUseFragment extends XPageSimpleListFragment {
                 XUpdate.newBuild(getActivity())
                         .updateUrl(Constants.CUSTOM_UPDATE_URL)
                         // 使用 Aria 断点续传下载服务
-                        .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity()))
+                       // .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity()))
+                        .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity(), 3))
                         .updateChecker(new DefaultUpdateChecker() {
                             @Override
                             public void onBeforeCheck() {
@@ -122,8 +123,8 @@ public class AdvancedUseFragment extends XPageSimpleListFragment {
             case 3:
                 XUpdate.newBuild(getActivity())
                         .supportBackgroundUpdate(true)
-                        // 使用 Aria 断点续传下载服务
-                        .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity()))
+                        // 使用 Aria 断点续传下载服务（单线程，进度条平滑爬升，便于观察）
+                        .updateHttpService(AriaDownloader.getUpdateHttpService(getActivity(), 3))
 //                        // 忽略下载异常，不关闭更新提示窗
 //                        .promptIgnoreDownloadError(true)
                         .build()
